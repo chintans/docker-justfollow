@@ -14,6 +14,9 @@ RUN apt-get update \
  && apt-get install -y git-core build-essential openssl libssl-dev pkg-config perl libssl1.0.0 libxslt1.1 libgd3 libxpm4 libgeoip1 libav-tools python python-dev python-pip python-virtualenv supervisor sqlite3  libsqlite3-dev gcc g++ make libc6-dev libpcre++-dev libssl-dev libxslt-dev libgd2-xpm-dev libgeoip-dev wget curl software-properties-common python-software-properties nodejs redis-server postgresql-9.4 postgresql-client-9.4 postgresql-contrib-9.4\
  && rm -rf /var/lib/apt/lists/* # 20150220
  
+RUN easy_install pip
+RUN pip install uwsgi
+
 # download nginx-rtmp-module
 #RUN mkdir -p /tmp/nginx-rtmp-module
 #RUN curl -L https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz | tar -zxf - --strip=1 -C /tmp/nginx-rtmp-module
@@ -89,8 +92,8 @@ RUN echo "host all  all    0.0.0.0/0  md5" >> /etc/postgresql/9.4/main/pg_hba.co
 # And add ``listen_addresses`` to ``/etc/postgresql/9.4/main/postgresql.conf``
 RUN echo "listen_addresses='*'" >> /etc/postgresql/9.4/main/postgresql.conf
 
-RUN sudo easy_install pip
-RUN sudo pip install uwsgi
+RUN easy_install pip
+RUN pip install uwsgi
 
 # Expose the PostgreSQL port
 EXPOSE 5432
