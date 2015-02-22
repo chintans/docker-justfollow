@@ -10,6 +10,7 @@ RUN wget https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz -O - | 
 
 # download ngx_pagespeed
 RUN mkdir /tmp/ngx_pagespeed
+RUN wget https://github.com/pagespeed/ngx_pagespeed/archive/release-1.9.32.3-beta.tar.gz -O - | tar -zxf - --strip=1 -C /tmp/ngx_pagespeed
 RUN wget https://dl.google.com/dl/page-speed/psol/1.9.32.3.tar.gz -O - | tar -zxf - -C /tmp/ngx_pagespeed
 
 # compile nginx with the nginx-rtmp-module
