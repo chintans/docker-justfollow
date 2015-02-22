@@ -20,7 +20,7 @@ RUN curl -L http://nginx.org/download/nginx-1.7.10.tar.gz | tar -zxf - -C /tmp/n
 # use maximum available processor cores for the build
 RUN alias make="make -j$(awk '/^processor/ { N++} END { print N }' /proc/cpuinfo)"
 
-RUN cd /tmp/nginx &&./configure --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --sbin-path=/usr/sbin \
+RUN cd /tmp/nginx &&./configure --quiet --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --sbin-path=/usr/sbin \
   --http-log-path=/var/log/nginx/access.log --error-log-path=/var/log/nginx/error.log \
   --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid \
   --http-client-body-temp-path=/var/lib/nginx/body \
@@ -41,40 +41,16 @@ RUN chmod 755 /start
 
 ADD nginx/nginx.conf /etc/nginx/nginx.conf
 # Install Node.js
-RUN \
-  cd /tmp && \
-  wget http://nodejs.org/dist/node-latest.tar.gz && \
-  tar xvzf node-latest.tar.gz && \
-  rm -f node-latest.tar.gz && \
-  cd node-v* && \
-  ./configure && \
-  CXX="g++ -Wno-unused-local-typedefs" make && \
-  CXX="g++ -Wno-unused-local-typedefs" make install && \
-  cd /tmp && \
-  rm -rf /tmp/node-v* && \
-  npm install -g npm && \
-  echo -e '\n# Node.js\nexport PATH="node_modules/.bin:$PATH"' >> /root/.bashrc
+RUN curl -sL https://deb.nodesource.com/setup | sudo bash -
+RUN apt-get install -y nodejs npm
 
 # Install Redis.
-RUN \
-  cd /tmp && \
-  wget http://download.redis.io/redis-stable.tar.gz && \
-  tar xvzf redis-stable.tar.gz && \
-  cd redis-stable && \
-  make && \
-  make install && \
-  cp -f src/redis-sentinel /usr/local/bin && \
-  mkdir -p /etc/redis && \
-  cp -f *.conf /etc/redis && \
-  rm -rf /tmp/redis-stable* && \
-  sed -i 's/^\(bind .*\)$/# \1/' /etc/redis/redis.conf && \
-  sed -i 's/^\(daemonize .*\)$/# \1/' /etc/redis/redis.conf && \
-  sed -i 's/^\(dir .*\)$/# \1\ndir \/data/' /etc/redis/redis.conf && \
-  sed -i 's/^\(logfile .*\)$/# \1/' /etc/redis/redis.conf
+ADD redis/dotdeb.org.list /etc/apt/sources.list.d/dotdeb.org.list
+RUN wget -q -O - http://www.dotdeb.org/dotdeb.gpg | sudo apt-key add -
+RUN apt-get update -y && apt-get install -y redis-server
 
 
-RUN \
-  echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
+RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections && \
   add-apt-repository -y ppa:webupd8team/java && \
   apt-get update && \
   apt-get install -y oracle-java8-installer && \
