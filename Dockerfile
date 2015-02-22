@@ -20,7 +20,7 @@ RUN curl -L http://nginx.org/download/nginx-1.7.10.tar.gz | tar -zxf - -C /tmp/n
 # use maximum available processor cores for the build
 RUN alias make="make -j$(awk '/^processor/ { N++} END { print N }' /proc/cpuinfo)"
 
-RUN cd /tmp/nginx &&./configure --quiet --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --sbin-path=/usr/sbin \
+RUN cd /tmp/nginx &&./configure --silent --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --sbin-path=/usr/sbin \
   --http-log-path=/var/log/nginx/access.log --error-log-path=/var/log/nginx/error.log \
   --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid \
   --http-client-body-temp-path=/var/lib/nginx/body \
