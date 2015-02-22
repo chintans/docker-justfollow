@@ -5,11 +5,11 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* # 20150220
  
 # download nginx-rtmp-module
-RUN mkdir /modules/nginx-rtmp-module
+RUN mkdir -p /modules/nginx-rtmp-module
 RUN wget https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz -O - | tar -zxf - --strip=1 -C /modules/nginx-rtmp-module
 
 # download ngx_pagespeed
-RUN mkdir /modules/ngx_pagespeed
+RUN mkdir -p /modules/ngx_pagespeed
 RUN wget https://github.com/pagespeed/ngx_pagespeed/archive/release-1.9.32.3-beta.tar.gz -O - | tar -zxf - --strip=1 -C /modules/ngx_pagespeed
 RUN wget https://dl.google.com/dl/page-speed/psol/1.9.32.3.tar.gz -O - | tar -zxf - -C /modules/ngx_pagespeed
 
