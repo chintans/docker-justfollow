@@ -6,16 +6,16 @@ RUN apt-get update \
  
 # download nginx-rtmp-module
 RUN mkdir -p /tmp/nginx-rtmp-module
-RUN curl https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz | tar -zxf - --strip=1 -C /tmp/nginx-rtmp-module
+RUN curl https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz | tar -zxf --strip=1 -C /tmp/nginx-rtmp-module
 
 # download ngx_pagespeed
 RUN mkdir -p /modules/ngx_pagespeed
-RUN curl https://github.com/pagespeed/ngx_pagespeed/archive/release-1.9.32.3-beta.tar.gz | tar -zxf - --strip=1 -C /modules/ngx_pagespeed
-RUN curl https://dl.google.com/dl/page-speed/psol/1.9.32.3.tar.gz | tar -zxf - -C /modules/ngx_pagespeed
+RUN curl https://github.com/pagespeed/ngx_pagespeed/archive/release-1.9.32.3-beta.tar.gz | tar -zxf --strip=1 -C /modules/ngx_pagespeed
+RUN curl https://dl.google.com/dl/page-speed/psol/1.9.32.3.tar.gz | tar -zxf -C /modules/ngx_pagespeed
 
 # compile nginx with the nginx-rtmp-module
 RUN mkdir -p /source/nginx /usr/share/nginx/html /var/log/nginx
-RUN curl http://nginx.org/download/nginx-1.7.10.tar.gz | tar -zxf - -C /source/nginx --strip=1
+RUN curl http://nginx.org/download/nginx-1.7.10.tar.gz | tar -zxf -C /source/nginx --strip=1
 
 # use maximum available processor cores for the build
 RUN alias make="make -j$(awk '/^processor/ { N++} END { print N }' /proc/cpuinfo)"
