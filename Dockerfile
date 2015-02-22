@@ -1,7 +1,17 @@
 FROM ubuntu:trusty
 
+RUN curl -sL https://deb.nodesource.com/setup | sudo bash -
+ADD redis/dotdeb.org.list /etc/apt/sources.list.d/dotdeb.org.list
+RUN wget -q -O - http://www.dotdeb.org/dotdeb.gpg | sudo apt-key add -
+# Add the PostgreSQL PGP key to verify their Debian packages.
+# It should be the same key as https://www.postgresql.org/media/keys/ACCC4CF8.asc
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+# Add PostgreSQL's repository. It contains the most recent stable release
+#     of PostgreSQL, ``9.4``.
+RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+
 RUN apt-get update \
- && apt-get install -y git-core build-essential openssl libssl-dev pkg-config perl libssl1.0.0 libxslt1.1 libgd3 libxpm4 libgeoip1 libav-tools python python-dev python-pip python-virtualenv supervisor sqlite3  libsqlite3-dev gcc g++ make libc6-dev libpcre++-dev libssl-dev libxslt-dev libgd2-xpm-dev libgeoip-dev wget curl \
+ && apt-get install -y git-core build-essential openssl libssl-dev pkg-config perl libssl1.0.0 libxslt1.1 libgd3 libxpm4 libgeoip1 libav-tools python python-dev python-pip python-virtualenv supervisor sqlite3  libsqlite3-dev gcc g++ make libc6-dev libpcre++-dev libssl-dev libxslt-dev libgd2-xpm-dev libgeoip-dev wget curl software-properties-common python-software-properties nodejs redis-server postgresql-9.4 postgresql-client-9.4 postgresql-contrib-9.4\
  && rm -rf /var/lib/apt/lists/* # 20150220
  
 # download nginx-rtmp-module
@@ -40,17 +50,6 @@ ADD nginx/start /start
 RUN chmod 755 /start
 
 ADD nginx/nginx.conf /etc/nginx/nginx.conf
-# Install Node.js
-RUN curl -sL https://deb.nodesource.com/setup | sudo bash -
-RUN apt-get install -y nodejs
-
-# Install Redis.
-ADD redis/dotdeb.org.list /etc/apt/sources.list.d/dotdeb.org.list
-RUN wget -q -O - http://www.dotdeb.org/dotdeb.gpg | sudo apt-key add -
-RUN apt-get update -y && apt-get install -y redis-server
-
-
-RUN apt-get install software-properties-common python-software-properties 
 
 RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections && \
   add-apt-repository -y ppa:webupd8team/java && \
@@ -62,19 +61,12 @@ RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true 
 # Define commonly used JAVA_HOME variable
 ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
 
-  
-# Add the PostgreSQL PGP key to verify their Debian packages.
-# It should be the same key as https://www.postgresql.org/media/keys/ACCC4CF8.asc
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
 
-# Add PostgreSQL's repository. It contains the most recent stable release
-#     of PostgreSQL, ``9.4``.
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" > /etc/apt/sources.list.d/pgdg.list
 
 # Install ``python-software-properties``, ``software-properties-common`` and PostgreSQL 9.3
 #  There are some warnings (in red) that show up during the build. You can hide
 #  them by prefixing each apt-get statement with DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y postgresql-9.4 postgresql-client-9.4 postgresql-contrib-9.4
+
 
 # Note: The official Debian and Ubuntu images automatically ``apt-get clean``
 # after each ``apt-get``
