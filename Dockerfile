@@ -1,21 +1,21 @@
 FROM ubuntu:latest
 
 RUN apt-get update \
- && apt-get install -y git-core build-essential openssl libssl-dev pkg-config perl libssl1.0.0 libxslt1.1 libgd3 libxpm4 libgeoip1 libav-tools python python-dev python-pip python-virtualenv supervisor sqlite3  libsqlite3-dev gcc g++ make libc6-dev libpcre++-dev libssl-dev libxslt-dev libgd2-xpm-dev libgeoip-dev wget \
+ && apt-get install -y git-core build-essential openssl libssl-dev pkg-config perl libssl1.0.0 libxslt1.1 libgd3 libxpm4 libgeoip1 libav-tools python python-dev python-pip python-virtualenv supervisor sqlite3  libsqlite3-dev gcc g++ make libc6-dev libpcre++-dev libssl-dev libxslt-dev libgd2-xpm-dev libgeoip-dev wget curl \
  && rm -rf /var/lib/apt/lists/* # 20150220
  
 # download nginx-rtmp-module
 RUN mkdir -p /tmp/nginx-rtmp-module
-RUN wget https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz -O - | tar -zxf - --strip=1 -C /tmp/nginx-rtmp-module
+RUN curl https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz -O - | tar -zxf - --strip=1 -C /tmp/nginx-rtmp-module
 
 # download ngx_pagespeed
 RUN mkdir -p /modules/ngx_pagespeed
-RUN wget https://github.com/pagespeed/ngx_pagespeed/archive/release-1.9.32.3-beta.tar.gz -O - | tar -zxf - --strip=1 -C /modules/ngx_pagespeed
-RUN wget https://dl.google.com/dl/page-speed/psol/1.9.32.3.tar.gz -O - | tar -zxf - -C /modules/ngx_pagespeed
+RUN curl https://github.com/pagespeed/ngx_pagespeed/archive/release-1.9.32.3-beta.tar.gz -O - | tar -zxf - --strip=1 -C /modules/ngx_pagespeed
+RUN curl https://dl.google.com/dl/page-speed/psol/1.9.32.3.tar.gz -O - | tar -zxf - -C /modules/ngx_pagespeed
 
 # compile nginx with the nginx-rtmp-module
 RUN mkdir -p /source/nginx /usr/share/nginx/html /var/log/nginx
-RUN wget http://nginx.org/download/nginx-1.7.10.tar.gz -O - | tar -zxf - -C /source/nginx --strip=1
+RUN curl http://nginx.org/download/nginx-1.7.10.tar.gz -O - | tar -zxf - -C /source/nginx --strip=1
 
 # use maximum available processor cores for the build
 RUN alias make="make -j$(awk '/^processor/ { N++} END { print N }' /proc/cpuinfo)"
