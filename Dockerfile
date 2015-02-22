@@ -3,6 +3,18 @@ FROM ubuntu:latest
 RUN apt-get update \
  && apt-get install -y git-core build-essential openssl libssl-dev pkg-config perl libssl1.0.0 libxslt1.1 libgd3 libxpm4 libgeoip1 libav-tools python python-dev python-pip python-virtualenv supervisor sqlite3  libsqlite3-dev gcc g++ make libc6-dev libpcre++-dev libssl-dev libxslt-dev libgd2-xpm-dev libgeoip-dev wget \
  && rm -rf /var/lib/apt/lists/* # 20150220
+ 
+# download nginx-rtmp-module
+RUN mkdir /tmp/nginx-rtmp-module
+RUN wget https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz -O - | tar -zxf - --strip=1 -C /tmp/nginx-rtmp-module
+
+# download ngx_pagespeed
+RUN mkdir /tmp/ngx_pagespeed
+RUN wget https://dl.google.com/dl/page-speed/psol/1.9.32.3.tar.gz -O - | tar -zxf - -C /tmp/ngx_pagespeed
+
+# compile nginx with the nginx-rtmp-module
+RUN mkdir -p /tmp/nginx /usr/share/nginx/html /var/log/nginx
+RUN wget http://nginx.org/download/nginx-1.7.10.tar.gz -O - | tar -zxf - -C /tmp/nginx --strip=1
 
 ADD nginx/install /tmp/install
 RUN chmod 755 /tmp/install

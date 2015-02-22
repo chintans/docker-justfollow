@@ -8,18 +8,6 @@ NPS_VERSION=1.9.32.3
 # use maximum available processor cores for the build
 alias make="make -j$(awk '/^processor/ { N++} END { print N }' /proc/cpuinfo)"
 
-# download nginx-rtmp-module
-mkdir /tmp/nginx-rtmp-module
-wget https://github.com/arut/nginx-rtmp-module/archive/v${RTMP_VERSION}.tar.gz -O - | tar -zxf - --strip=1 -C /tmp/nginx-rtmp-module
-
-# download ngx_pagespeed
-mkdir /tmp/ngx_pagespeed
-wget https://github.com/pagespeed/ngx_pagespeed/archive/release-${NPS_VERSION}-beta.tar.gz -O - | tar -zxf - --strip=1 -C /tmp/ngx_pagespeed
-wget https://dl.google.com/dl/page-speed/psol/${NPS_VERSION}.tar.gz -O - | tar -zxf - -C /tmp/ngx_pagespeed
-
-# compile nginx with the nginx-rtmp-module
-mkdir -p /tmp/nginx /usr/share/nginx/html /var/log/nginx
-wget http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz -O - | tar -zxf - -C /tmp/nginx --strip=1
 cd /tmp/nginx
 
 ./configure --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --sbin-path=/usr/sbin \
