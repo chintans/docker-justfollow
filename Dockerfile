@@ -9,13 +9,13 @@ RUN mkdir -p /tmp/nginx-rtmp-module
 RUN curl -L https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz | tar -zxf - --strip=1 -C /tmp/nginx-rtmp-module
 
 # download ngx_pagespeed
-RUN mkdir -p /modules/ngx_pagespeed
-RUN curl -L https://github.com/pagespeed/ngx_pagespeed/archive/release-1.9.32.3-beta.tar.gz | tar -zxf - --strip=1 -C /modules/ngx_pagespeed
-RUN curl -L https://dl.google.com/dl/page-speed/psol/1.9.32.3.tar.gz | tar -zxf - -C /modules/ngx_pagespeed
+RUN mkdir -p /tmp/ngx_pagespeed
+RUN curl -L https://github.com/pagespeed/ngx_pagespeed/archive/release-1.9.32.3-beta.tar.gz | tar -zxf - --strip=1 -C /tmp/ngx_pagespeed
+RUN curl -L https://dl.google.com/dl/page-speed/psol/1.9.32.3.tar.gz | tar -zxf - -C /tmp/ngx_pagespeed
 
 # compile nginx with the nginx-rtmp-module
-RUN mkdir -p /source/nginx /usr/share/nginx/html /var/log/nginx
-RUN curl -L http://nginx.org/download/nginx-1.7.10.tar.gz | tar -zxf - -C /source/nginx --strip=1
+RUN mkdir -p /tmp/nginx /usr/share/nginx/html /var/log/nginx
+RUN curl -L http://nginx.org/download/nginx-1.7.10.tar.gz | tar -zxf - -C /tmp/nginx --strip=1
 
 # use maximum available processor cores for the build
 RUN alias make="make -j$(awk '/^processor/ { N++} END { print N }' /proc/cpuinfo)"
@@ -35,24 +35,12 @@ RUN cd /source/nginx &&./configure --prefix=/usr/share/nginx --conf-path=/etc/ng
   --with-http_spdy_module --with-http_sub_module --with-http_xslt_module \
   --with-mail --with-mail_ssl_module \
   --add-module=/tmp/nginx-rtmp-module \
-  --add-module=/modules/ngx_pagespeed && make && make install && cp /tmp/nginx-rtmp-module/stat.xsl /usr/share/nginx/html/
+  --add-module=/tmp/ngx_pagespeed && make && make install && cp /tmp/nginx-rtmp-module/stat.xsl /usr/share/nginx/html/
 
 ADD nginx/start /start
 RUN chmod 755 /start
 
 ADD nginx/nginx.conf /etc/nginx/nginx.conf
-
-RUN \
-  echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-  add-apt-repository -y ppa:webupd8team/java && \
-  apt-get update && \
-  apt-get install -y oracle-java8-installer && \
-  rm -rf /var/lib/apt/lists/* && \
-  rm -rf /var/cache/oracle-jdk8-installer
-
-# Define commonly used JAVA_HOME variable
-ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
-
 # Install Node.js
 RUN \
   cd /tmp && \
@@ -85,6 +73,19 @@ RUN \
   sed -i 's/^\(dir .*\)$/# \1\ndir \/data/' /etc/redis/redis.conf && \
   sed -i 's/^\(logfile .*\)$/# \1/' /etc/redis/redis.conf
 
+
+RUN \
+  echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
+  add-apt-repository -y ppa:webupd8team/java && \
+  apt-get update && \
+  apt-get install -y oracle-java8-installer && \
+  rm -rf /var/lib/apt/lists/* && \
+  rm -rf /var/cache/oracle-jdk8-installer
+
+# Define commonly used JAVA_HOME variable
+ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
+
+  
 # Add the PostgreSQL PGP key to verify their Debian packages.
 # It should be the same key as https://www.postgresql.org/media/keys/ACCC4CF8.asc
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
