@@ -44,7 +44,7 @@ RUN cd /tmp/nginx &&./configure --prefix=/usr/share/nginx --conf-path=/etc/nginx
   --with-http_gzip_static_module --with-http_image_filter_module \
   --with-http_spdy_module --with-http_sub_module --with-http_xslt_module \
   --with-mail --with-mail_ssl_module \  
-  --add-module=/tmp/ngx_pagespeed && make && make install
+  --add-module=/tmp/ngx_pagespeed && make -s && make -s install
 
 ADD nginx/start /start
 RUN chmod 755 /start
@@ -79,7 +79,7 @@ USER postgres
 # Note: here we use ``&&\`` to run commands one after the other - the ``\``
 #       allows the RUN command to span multiple lines.
 RUN    /etc/init.d/postgresql start &&\
-    psql --command "CREATE USER chintan WITH SUPERUSER PASSWORD 'docker';" &&\
+    psql --command "CREATE USER docker WITH SUPERUSER PASSWORD 'docker';" &&\
     createdb -O docker docker
 
 # Adjust PostgreSQL configuration so that remote connections to the
