@@ -5,8 +5,8 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* # 20150220
  
 # download nginx-rtmp-module
-RUN mkdir -p /tmp/nginx-rtmp-module
-RUN curl -L https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz | tar -zxf - --strip=1 -C /tmp/nginx-rtmp-module
+#RUN mkdir -p /tmp/nginx-rtmp-module
+#RUN curl -L https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz | tar -zxf - --strip=1 -C /tmp/nginx-rtmp-module
 
 # download ngx_pagespeed
 RUN mkdir -p /tmp/ngx_pagespeed
@@ -20,7 +20,7 @@ RUN curl -L http://nginx.org/download/nginx-1.7.10.tar.gz | tar -zxf - -C /tmp/n
 # use maximum available processor cores for the build
 RUN alias make="make -j$(awk '/^processor/ { N++} END { print N }' /proc/cpuinfo)"
 
-RUN cd /source/nginx &&./configure --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --sbin-path=/usr/sbin \
+RUN cd /tmp/nginx &&./configure --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --sbin-path=/usr/sbin \
   --http-log-path=/var/log/nginx/access.log --error-log-path=/var/log/nginx/error.log \
   --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid \
   --http-client-body-temp-path=/var/lib/nginx/body \
@@ -33,9 +33,8 @@ RUN cd /source/nginx &&./configure --prefix=/usr/share/nginx --conf-path=/etc/ng
   --with-http_addition_module --with-http_dav_module --with-http_geoip_module \
   --with-http_gzip_static_module --with-http_image_filter_module \
   --with-http_spdy_module --with-http_sub_module --with-http_xslt_module \
-  --with-mail --with-mail_ssl_module \
-  --add-module=/tmp/nginx-rtmp-module \
-  --add-module=/tmp/ngx_pagespeed && make && make install && cp /tmp/nginx-rtmp-module/stat.xsl /usr/share/nginx/html/
+  --with-mail --with-mail_ssl_module \  
+  --add-module=/tmp/ngx_pagespeed && make && make install
 
 ADD nginx/start /start
 RUN chmod 755 /start
