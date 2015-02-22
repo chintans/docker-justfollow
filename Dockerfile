@@ -5,8 +5,8 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* # 20150220
  
 # download nginx-rtmp-module
-RUN mkdir -p /modules/nginx-rtmp-module
-RUN wget https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz -O - | tar -zxf - --strip=1 -C /modules/nginx-rtmp-module
+RUN mkdir -p /tmp/nginx-rtmp-module
+RUN wget https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz -O - | tar -zxf - --strip=1 -C /tmp/nginx-rtmp-module
 
 # download ngx_pagespeed
 RUN mkdir -p /modules/ngx_pagespeed
@@ -34,8 +34,8 @@ RUN cd /source/nginx &&./configure --prefix=/usr/share/nginx --conf-path=/etc/ng
   --with-http_gzip_static_module --with-http_image_filter_module \
   --with-http_spdy_module --with-http_sub_module --with-http_xslt_module \
   --with-mail --with-mail_ssl_module \
-  --add-module=/modules/nginx-rtmp-module \
-  --add-module=/modules/ngx_pagespeed && make && make install && cp /modules/nginx-rtmp-module/stat.xsl /usr/share/nginx/html/
+  --add-module=/tmp/nginx-rtmp-module \
+  --add-module=/modules/ngx_pagespeed && make && make install && cp /tmp/nginx-rtmp-module/stat.xsl /usr/share/nginx/html/
 
 ADD nginx/start /start
 RUN chmod 755 /start
