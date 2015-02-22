@@ -5,21 +5,37 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* # 20150220
  
 # download nginx-rtmp-module
-RUN mkdir /tmp/nginx-rtmp-module
-RUN wget https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz -O - | tar -zxf - --strip=1 -C /tmp/nginx-rtmp-module
+RUN mkdir /modules/nginx-rtmp-module
+RUN wget https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz -O - | tar -zxf - --strip=1 -C /modules/nginx-rtmp-module
 
 # download ngx_pagespeed
-RUN mkdir /tmp/ngx_pagespeed
-RUN wget https://github.com/pagespeed/ngx_pagespeed/archive/release-1.9.32.3-beta.tar.gz -O - | tar -zxf - --strip=1 -C /tmp/ngx_pagespeed
-RUN wget https://dl.google.com/dl/page-speed/psol/1.9.32.3.tar.gz -O - | tar -zxf - -C /tmp/ngx_pagespeed
+RUN mkdir /modules/ngx_pagespeed
+RUN wget https://github.com/pagespeed/ngx_pagespeed/archive/release-1.9.32.3-beta.tar.gz -O - | tar -zxf - --strip=1 -C /modules/ngx_pagespeed
+RUN wget https://dl.google.com/dl/page-speed/psol/1.9.32.3.tar.gz -O - | tar -zxf - -C /modules/ngx_pagespeed
 
 # compile nginx with the nginx-rtmp-module
-RUN mkdir -p /tmp/nginx /usr/share/nginx/html /var/log/nginx
-RUN wget http://nginx.org/download/nginx-1.7.10.tar.gz -O - | tar -zxf - -C /tmp/nginx --strip=1
+RUN mkdir -p /source/nginx /usr/share/nginx/html /var/log/nginx
+RUN wget http://nginx.org/download/nginx-1.7.10.tar.gz -O - | tar -zxf - -C /source/nginx --strip=1
 
-ADD nginx/install /tmp/install
-RUN chmod 755 /tmp/install
-RUN /tmp/install
+# use maximum available processor cores for the build
+RUN alias make="make -j$(awk '/^processor/ { N++} END { print N }' /proc/cpuinfo)"
+
+RUN cd /source/nginx &&./configure --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --sbin-path=/usr/sbin \
+  --http-log-path=/var/log/nginx/access.log --error-log-path=/var/log/nginx/error.log \
+  --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid \
+  --http-client-body-temp-path=/var/lib/nginx/body \
+  --http-fastcgi-temp-path=/var/lib/nginx/fastcgi \
+  --http-proxy-temp-path=/var/lib/nginx/proxy \
+  --http-scgi-temp-path=/var/lib/nginx/scgi \
+  --http-uwsgi-temp-path=/var/lib/nginx/uwsgi \
+  --with-pcre-jit --with-ipv6 --with-http_ssl_module \
+  --with-http_stub_status_module --with-http_realip_module \
+  --with-http_addition_module --with-http_dav_module --with-http_geoip_module \
+  --with-http_gzip_static_module --with-http_image_filter_module \
+  --with-http_spdy_module --with-http_sub_module --with-http_xslt_module \
+  --with-mail --with-mail_ssl_module \
+  --add-module=/modules/nginx-rtmp-module \
+  --add-module=/modules/ngx_pagespeed && make && make install && cp /modules/nginx-rtmp-module/stat.xsl /usr/share/nginx/html/
 
 ADD nginx/start /start
 RUN chmod 755 /start
