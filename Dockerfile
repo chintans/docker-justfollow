@@ -42,7 +42,7 @@ RUN chmod 755 /start
 ADD nginx/nginx.conf /etc/nginx/nginx.conf
 # Install Node.js
 RUN curl -sL https://deb.nodesource.com/setup | sudo bash -
-RUN apt-get install -y nodejs npm
+RUN apt-get install -y nodejs
 
 # Install Redis.
 ADD redis/dotdeb.org.list /etc/apt/sources.list.d/dotdeb.org.list
