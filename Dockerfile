@@ -1,5 +1,5 @@
 FROM ubuntu:trusty
-RUN apt-get install curl wget
+RUN apt-get -y install curl wget
 RUN curl -sL https://deb.nodesource.com/setup | sudo bash -
 ADD redis/dotdeb.org.list /etc/apt/sources.list.d/dotdeb.org.list
 RUN wget -q -O - http://www.dotdeb.org/dotdeb.gpg | sudo apt-key add -
