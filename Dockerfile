@@ -16,44 +16,10 @@ RUN apt-get update \
  
 RUN easy_install pip
 RUN pip install uwsgi
-
-# download nginx-rtmp-module
-#RUN mkdir -p /tmp/nginx-rtmp-module
-#RUN curl -L https://github.com/arut/nginx-rtmp-module/archive/v1.1.5.tar.gz | tar -zxf - --strip=1 -C /tmp/nginx-rtmp-module
-
-# download ngx_pagespeed
-RUN mkdir -p /tmp/ngx_pagespeed
-RUN curl -L https://github.com/pagespeed/ngx_pagespeed/archive/release-1.9.32.3-beta.tar.gz | tar -zxf - --strip=1 -C /tmp/ngx_pagespeed
-RUN curl -L https://dl.google.com/dl/page-speed/psol/1.9.32.3.tar.gz | tar -zxf - -C /tmp/ngx_pagespeed
-
-# compile nginx with the nginx-rtmp-module
-RUN mkdir -p /tmp/nginx /usr/share/nginx/html /var/log/nginx
-RUN curl -L http://nginx.org/download/nginx-1.7.10.tar.gz | tar -zxf - -C /tmp/nginx --strip=1
-
-# use maximum available processor cores for the build
-RUN alias make="make -j$(awk '/^processor/ { N++} END { print N }' /proc/cpuinfo)"
-
-RUN cd /tmp/nginx &&./configure --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --sbin-path=/usr/sbin \
-  --http-log-path=/var/log/nginx/access.log --error-log-path=/var/log/nginx/error.log \
-  --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid \
-  --http-client-body-temp-path=/var/lib/nginx/body \
-  --http-fastcgi-temp-path=/var/lib/nginx/fastcgi \
-  --http-proxy-temp-path=/var/lib/nginx/proxy \
-  --http-scgi-temp-path=/var/lib/nginx/scgi \
-  --http-uwsgi-temp-path=/var/lib/nginx/uwsgi \
-  --with-pcre-jit --with-ipv6 --with-http_ssl_module \
-  --with-http_stub_status_module --with-http_realip_module \
-  --with-http_addition_module --with-http_dav_module --with-http_geoip_module \
-  --with-http_gzip_static_module --with-http_image_filter_module \
-  --with-http_spdy_module --with-http_sub_module --with-http_xslt_module \
-  --with-mail --with-mail_ssl_module \  
-  --add-module=/tmp/ngx_pagespeed && make -s && make -s install
-
-ADD nginx/start /start
-RUN chmod 755 /start
-
+RUN sudo add-apt-repository ppa:nginx/development && sudo apt-get update && sudo apt-get install nginx-full -y
+ADD nginx/apps.justfollow.it /etc/nginx/sites-available/apps.justfollow.it
 ADD nginx/nginx.conf /etc/nginx/nginx.conf
-
+RUN mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled && ln -s /etc/nginx/sites-available/apps.justfollow.it
 RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections && \
   add-apt-repository -y ppa:webupd8team/java && \
   apt-get update && \
@@ -63,16 +29,6 @@ RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true 
 
 # Define commonly used JAVA_HOME variable
 ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
-
-
-
-# Install ``python-software-properties``, ``software-properties-common`` and PostgreSQL 9.3
-#  There are some warnings (in red) that show up during the build. You can hide
-#  them by prefixing each apt-get statement with DEBIAN_FRONTEND=noninteractive
-
-
-# Note: The official Debian and Ubuntu images automatically ``apt-get clean``
-# after each ``apt-get``
 
 # Run the rest of the commands as the ``postgres`` user created by the ``postgres-9.3`` package when it was ``apt-get installed``
 USER postgres
@@ -101,4 +57,4 @@ EXPOSE 6379
 
 VOLUME ["/var/cache/ngx_pagespeed","/data","/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
-CMD ["/start","bash","redis-server","/etc/redis/redis.conf","/usr/lib/postgresql/9.4/bin/postgres", "-D", "/var/lib/postgresql/9.4/main", "-c", "config_file=/etc/postgresql/9.4/main/postgresql.conf","supervisord"]
+CMD ["supervisord"]
